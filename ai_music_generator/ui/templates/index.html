@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Music Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Music Generator</h1>
+            <p>Generate original music using AI techniques</p>
+        </header>
+        
+        <main>
+            <div class="form-container">
+                <h2>Music Parameters</h2>
+                
+                <div class="form-group">
+                    <label for="genre">Genre (required):</label>
+                    <select id="genre" required>
+                        <option value="Pop">Pop</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Jazz">Jazz</option>
+                        <option value="Classical">Classical</option>
+                        <option value="Blues">Blues</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="instruments">Instruments:</label>
+                    <select id="instruments" multiple>
+                        <option value="Piano" selected>Piano</option>
+                        <option value="Guitar">Guitar</option>
+                        <option value="Bass">Bass</option>
+                        <option value="Drums">Drums</option>
+                        <option value="Violin">Violin</option>
+                        <option value="Synth">Synth</option>
+                        <option value="Flute">Flute</option>
+                        <option value="Trumpet">Trumpet</option>
+                    </select>
+                    <small>Hold Ctrl/Cmd to select multiple</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="scale">Scale/Key:</label>
+                    <select id="scale">
+                        <option value="C Major" selected>C Major</option>
+                        <option value="A Minor">A Minor</option>
+                        <option value="G Major">G Major</option>
+                        <option value="E Minor">E Minor</option>
+                        <option value="F Major">F Major</option>
+                        <option value="D Minor">D Minor</option>
+                        <option value="D Major">D Major</option>
+                        <option value="B Minor">B Minor</option>
+                        <option value="A Major">A Major</option>
+                        <option value="F# Minor">F# Minor</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mood">Mood/Theme:</label>
+                    <select id="mood">
+                        <option value="Happy">Happy</option>
+                        <option value="Sad">Sad</option>
+                        <option value="Energetic">Energetic</option>
+                        <option value="Calm" selected>Calm</option>
+                        <option value="Neutral">Neutral</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tempo">Tempo:</label>
+                    <select id="tempo">
+                        <option value="Slow">Slow</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Fast">Fast</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="length">Song Length:</label>
+                    <select id="length">
+                        <option value="Short">Short (1-2 mins)</option>
+                        <option value="Medium" selected>Medium (3-4 mins)</option>
+                        <option value="Long">Long (5+ mins)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vocals-enabled">Vocals:</label>
+                    <input type="checkbox" id="vocals-enabled">
+                    
+                    <div id="vocals-options" class="hidden">
+                        <label for="vocals-type">Type:</label>
+                        <select id="vocals-type">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Duet">Duet</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="complexity">Complexity Level:</label>
+                    <select id="complexity">
+                        <option value="Simple" selected>Simple</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Complex">Complex</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mode">Generation Mode:</label>
+                    <select id="mode">
+                        <option value="markov">Markov Chain</option>
+                        <option value="rule">Rule-Based</option>
+                        <option value="hybrid" selected>Hybrid</option>
+                    </select>
+                </div>
+                
+                <button id="generate-btn">Generate Music</button>
+            </div>
+            
+            <div class="player-container hidden" id="player-section">
+                <h2>Generated Music</h2>
+                <audio id="audio-player" controls></audio>
+                <div class="player-controls">
+                    <button id="regenerate-btn">Regenerate</button>
+                    <a id="download-link" href="#" download>Download MP3</a>
+                </div>
+            </div>
+        </main>
+        
+        <div id="loading" class="hidden" style="display: none;">
+            <div class="spinner"></div>
+            <p>Generating music...</p>
+        </div>
+        
+        <footer>
+            <p>AI Music Generator - Thesis Project</p>
+            <p>"The Impact of Artificial Intelligence on the Music Industry"</p>
+        </footer>
+    </div>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
