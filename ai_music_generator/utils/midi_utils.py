@@ -184,8 +184,8 @@ def create_midi_file(melody, harmony, instruments=['Piano'], bpm=100, vocals=Non
     Returns:
         str: Path to the created MIDI file
     """
-    # Create a MIDI file with 1 track
-    midi = MIDIFile(len(instruments) + 1)  # +1 for harmony
+    # Create a MIDI file with multiple tracks (one for each instrument's melody and harmony)
+    midi = MIDIFile(len(instruments) * 2)  # One track for each instrument's melody and harmony
     
     # Set tempo
     midi.addTempo(0, 0, bpm)
@@ -204,27 +204,71 @@ def create_midi_file(melody, harmony, instruments=['Piano'], bpm=100, vocals=Non
         # Set instrument
         midi.addProgramChange(track, 0, 0, program)
         
-        # Add melody notes
+        # Add melody notes with variations for each instrument
         time = 0
-        for note_str, duration in melody:
+        for idx, (note_str, duration) in enumerate(melody):
             note_name, octave = parse_note(note_str)
             
             try:
                 midi_note = note_to_midi(note_name, octave)
                 
-                # Add note with velocity 100 (medium-loud)
-                midi.addNote(track, 0, midi_note, time, duration * 4, 100)
+                # Add variations based on instrument
+                # Some instruments play all notes, others play every other note
+                # This creates a more interesting ensemble effect
+                if instrument == 'Piano':
+                    # Piano plays all notes
+                    midi.addNote(track, 0, midi_note, time, duration * 4, 100)
+                elif instrument == 'Guitar' and idx % 3 == 0:
+                    # Guitar plays every third note with slight octave variation
+                    midi.addNote(track, 0, midi_note + 12, time, duration * 4, 90)
+                elif instrument == 'Bass' and idx % 4 == 0:
+                    # Bass plays every fourth note, one octave lower
+                    midi.addNote(track, 0, midi_note - 12, time, duration * 4, 95)
+                elif instrument == 'Drums' and idx % 2 == 0:
+                    # Drums play every other note (simplified rhythm)
+                    # Use a fixed note for drums (MIDI note 38 = acoustic snare)
+                    midi.addNote(track, 0, 38, time, duration * 4, 100)
+                    # Add kick drum on strong beats
+                    if idx % 4 == 0:
+                        midi.addNote(track, 0, 36, time, duration * 4, 110)  # 36 = bass drum
+                elif instrument == 'Violin' and idx % 2 == 1:
+                    # Violin plays opposite notes from drums
+                    midi.addNote(track, 0, midi_note + 12, time, duration * 4, 85)
+                elif instrument == 'Synth' and idx % 3 == 1:
+                    # Synth plays different notes than Guitar
+                    midi.addNote(track, 0, midi_note + 7, time, duration * 4, 80)  # Add a fifth
+                elif instrument == 'Flute' and idx % 3 == 2:
+                    # Flute plays different notes than Guitar and Synth
+                    midi.addNote(track, 0, midi_note + 24, time, duration * 4, 75)  # Two octaves up
+                elif instrument == 'Trumpet' and idx % 4 == 2:
+                    # Trumpet plays different notes than Bass
+                    midi.addNote(track, 0, midi_note + 12, time, duration * 4, 90)  # One octave up
+                else:
+                    # Other instruments play all notes
+                    midi.addNote(track, 0, midi_note, time, duration * 4, 90)
             except ValueError:
                 # Skip invalid notes
                 pass
             
             time += duration * 4
     
-    # Add harmony track
-    harmony_track = len(instruments)
+    # Add harmony tracks - one for each instrument
+    harmony_tracks = []
     
-    # Set instrument for harmony (use piano by default)
-    midi.addProgramChange(harmony_track, 0, 0, 0)
+    # Create a harmony track for each instrument
+    for i, instrument in enumerate(instruments):
+        harmony_track = len(instruments) + i
+        harmony_tracks.append(harmony_track)
+        
+        # Get the MIDI program number for the instrument
+        if instrument in INSTRUMENT_MAP:
+            program = INSTRUMENT_MAP[instrument]
+        else:
+            # Default to piano if instrument not found
+            program = 0
+        
+        # Set instrument for harmony
+        midi.addProgramChange(harmony_track, 0, 0, program)
     
     # Add harmony chords
     time = 0
@@ -233,18 +277,23 @@ def create_midi_file(melody, harmony, instruments=['Piano'], bpm=100, vocals=Non
         try:
             chord_notes = get_chord_notes(chord_name)
             
-            # Add each note in the chord
-            for note_str in chord_notes:
-                note_name, octave = parse_note(note_str)
-                
-                try:
-                    midi_note = note_to_midi(note_name, octave)
-                    
-                    # Add note with velocity 80 (softer than melody)
-                    midi.addNote(harmony_track, 0, midi_note, time, 4, 80)
-                except ValueError:
-                    # Skip invalid notes
-                    pass
+            # Distribute chord notes among instruments
+            for track_idx, harmony_track in enumerate(harmony_tracks):
+                # Each instrument plays a subset of the chord notes
+                # This creates a more interesting harmony
+                for note_idx, note_str in enumerate(chord_notes):
+                    # Distribute notes among instruments
+                    if note_idx % len(harmony_tracks) == track_idx:
+                        note_name, octave = parse_note(note_str)
+                        
+                        try:
+                            midi_note = note_to_midi(note_name, octave)
+                            
+                            # Add note with velocity 80 (softer than melody)
+                            midi.addNote(harmony_track, 0, midi_note, time, 4, 80)
+                        except ValueError:
+                            # Skip invalid notes
+                            pass
         except ValueError:
             # Skip invalid chords
             pass

@@ -126,17 +126,56 @@ class MarkovModel:
         else:
             return matrix
 
-    def generate_melody(self, scale_notes, num_bars, complexity='Simple', mood='Neutral', genre='Pop', chord_progression=None):
+    def generate_melody(self, scale_notes, num_bars, complexity='Simple', mood='Neutral', genre='Pop', chord_progression=None, tempo='Medium'):
         matrix = self._get_transition_matrix(genre, mood)
         matrix = self._adjust_for_complexity(matrix, complexity)
-        if complexity == 'Simple':
-            notes_per_bar = 4
-        elif complexity == 'Intermediate':
-            notes_per_bar = 8
-        else:
-            notes_per_bar = 16
+        
+        # Adjust notes per bar based on tempo and complexity
+        if tempo == 'Slow':
+            if complexity == 'Simple':
+                notes_per_bar = 2  # Fewer notes for slow tempo
+            elif complexity == 'Intermediate':
+                notes_per_bar = 4
+            else:
+                notes_per_bar = 8
+        elif tempo == 'Fast':
+            if complexity == 'Simple':
+                notes_per_bar = 8  # More notes for fast tempo
+            elif complexity == 'Intermediate':
+                notes_per_bar = 12
+            else:
+                notes_per_bar = 16
+        else:  # Medium tempo
+            if complexity == 'Simple':
+                notes_per_bar = 4
+            elif complexity == 'Intermediate':
+                notes_per_bar = 8
+            else:
+                notes_per_bar = 12
+        
         current_degree = 0
         melody = []
+        
+        # Adjust the transition matrix based on tempo
+        if tempo == 'Fast':
+            # For fast tempo, increase probability of larger jumps
+            for i in range(8):
+                for j in range(8):
+                    # Increase probability of jumps of 3 or more steps
+                    if abs(i - j) >= 3:
+                        matrix[i, j] *= 1.5
+                # Renormalize
+                matrix[i] /= matrix[i].sum()
+        elif tempo == 'Slow':
+            # For slow tempo, increase probability of smaller steps
+            for i in range(8):
+                for j in range(8):
+                    # Increase probability of steps of 2 or less
+                    if abs(i - j) <= 2:
+                        matrix[i, j] *= 1.5
+                # Renormalize
+                matrix[i] /= matrix[i].sum()
+        
         for bar in range(num_bars):
             if chord_progression and bar < len(chord_progression):
                 chord_notes = [note for note in chord_progression[bar].split() if note in scale_notes]
@@ -148,6 +187,7 @@ class MarkovModel:
                     temp_matrix[i] /= temp_matrix[i].sum()
             else:
                 temp_matrix = matrix
+            
             for _ in range(notes_per_bar):
                 # Safely sample next note: clip negatives and renormalize
                 row = temp_matrix[current_degree].copy()
@@ -159,15 +199,32 @@ class MarkovModel:
                     row = row / total
                 next_degree = np.random.choice(len(row), p=row)
 
-                if complexity == 'Simple':
-                    duration = 0.25
-                elif complexity == 'Intermediate':
-                    duration = random.choice([0.125, 0.25])
-                else:
-                    duration = random.choice([0.0625, 0.125, 0.25])
+                # Adjust note durations based on tempo
+                if tempo == 'Slow':
+                    if complexity == 'Simple':
+                        duration = random.choice([0.5, 0.25])  # Longer notes for slow tempo
+                    elif complexity == 'Intermediate':
+                        duration = random.choice([0.25, 0.5])
+                    else:
+                        duration = random.choice([0.125, 0.25, 0.5])
+                elif tempo == 'Fast':
+                    if complexity == 'Simple':
+                        duration = random.choice([0.125, 0.25])  # Shorter notes for fast tempo
+                    elif complexity == 'Intermediate':
+                        duration = random.choice([0.0625, 0.125, 0.25])
+                    else:
+                        duration = random.choice([0.0625, 0.125])
+                else:  # Medium tempo
+                    if complexity == 'Simple':
+                        duration = 0.25
+                    elif complexity == 'Intermediate':
+                        duration = random.choice([0.125, 0.25])
+                    else:
+                        duration = random.choice([0.0625, 0.125, 0.25])
 
                 note = scale_notes[next_degree % len(scale_notes)]
                 octave = 4 + (next_degree // len(scale_notes))
                 melody.append((f"{note}{octave}", duration))
                 current_degree = next_degree % 8
+        
         return melody

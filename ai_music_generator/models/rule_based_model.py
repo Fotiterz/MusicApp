@@ -105,16 +105,60 @@ class RuleBasedModel:
             # Default to pop progression if genre not found
             return random.choice(self.chord_progressions['Pop'])
     
-    def _get_rhythm_pattern(self, complexity):
+    def _get_rhythm_pattern(self, complexity, tempo='Medium'):
         """
-        Get a rhythm pattern for the specified complexity level.
+        Get a rhythm pattern for the specified complexity level and tempo.
         
         Args:
             complexity (str): Complexity level - Simple/Intermediate/Complex
+            tempo (str): Tempo - Slow/Medium/Fast
             
         Returns:
             list: List of note durations
         """
+        # Define tempo-specific rhythm patterns
+        tempo_patterns = {
+            'Slow': {
+                'Simple': [
+                    [0.5, 0.5],  # Two half notes
+                    [0.75, 0.25],  # Dotted half + quarter
+                    [0.5, 0.25, 0.25],  # Half + two quarters
+                ],
+                'Intermediate': [
+                    [0.5, 0.25, 0.25, 0.5],  # Half + two quarters + half
+                    [0.25, 0.5, 0.25, 0.5],  # Quarter + half + quarter + half
+                    [0.5, 0.5, 0.25, 0.25],  # Two halves + two quarters
+                ],
+                'Complex': [
+                    [0.25, 0.25, 0.5, 0.25, 0.25, 0.5],  # More varied rhythm
+                    [0.5, 0.125, 0.125, 0.25, 0.5, 0.25],  # Mix of durations
+                    [0.375, 0.125, 0.25, 0.25, 0.5, 0.25],  # Complex rhythm
+                ]
+            },
+            'Fast': {
+                'Simple': [
+                    [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125],  # Eight eighth notes
+                    [0.125, 0.125, 0.25, 0.125, 0.125, 0.25],  # Faster rhythm
+                    [0.25, 0.125, 0.125, 0.25, 0.25],  # Mix of quarters and eighths
+                ],
+                'Intermediate': [
+                    [0.0625, 0.0625, 0.125, 0.125, 0.0625, 0.0625, 0.125, 0.125, 0.25],  # Very fast
+                    [0.125, 0.0625, 0.0625, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125],  # Fast with variations
+                    [0.0625, 0.0625, 0.0625, 0.0625, 0.125, 0.125, 0.125, 0.125, 0.125],  # Sixteenths and eighths
+                ],
+                'Complex': [
+                    [0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.0625, 0.125, 0.125, 0.125, 0.125],  # Very complex
+                    [0.0625, 0.03125, 0.03125, 0.0625, 0.0625, 0.125, 0.0625, 0.0625, 0.125, 0.125, 0.125],  # Extremely varied
+                    [0.125, 0.0625, 0.0625, 0.0625, 0.0625, 0.125, 0.0625, 0.0625, 0.125, 0.125],  # Fast complex rhythm
+                ]
+            }
+        }
+        
+        # If we have a specific tempo pattern, use it
+        if tempo in tempo_patterns and complexity in tempo_patterns[tempo]:
+            return random.choice(tempo_patterns[tempo][complexity])
+        
+        # Otherwise fall back to the default patterns
         if complexity in self.rhythm_patterns:
             return random.choice(self.rhythm_patterns[complexity])
         else:
@@ -168,7 +212,7 @@ class RuleBasedModel:
         
         return notes
     
-    def generate_composition(self, scale, chord_progression, num_bars, complexity='Simple', mood='Neutral'):
+    def generate_composition(self, scale, chord_progression, num_bars, complexity='Simple', mood='Neutral', tempo='Medium'):
         """
         Generate a composition using rule-based approach.
         
@@ -178,6 +222,7 @@ class RuleBasedModel:
             num_bars (int): Number of bars to generate
             complexity (str): Complexity level - Simple/Intermediate/Complex
             mood (str): Mood/theme
+            tempo (str): Tempo - Slow/Medium/Fast
             
         Returns:
             tuple: (melody, harmony) where melody is a list of (note, duration) tuples
@@ -197,8 +242,8 @@ class RuleBasedModel:
             # Get chord notes
             chord_notes = get_chord_notes(chord, scale)
             
-            # Choose a rhythm pattern based on complexity
-            rhythm = self._get_rhythm_pattern(complexity)
+            # Choose a rhythm pattern based on complexity and tempo
+            rhythm = self._get_rhythm_pattern(complexity, tempo)
             
             # Choose a melodic pattern based on mood
             melodic_pattern = self._get_melodic_pattern(mood)
