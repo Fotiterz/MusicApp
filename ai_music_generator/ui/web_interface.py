@@ -36,6 +36,13 @@ def start_web_server(port=12000):
             # Get parameters from request
             params = request.json
             
+            # Log the parameters for debugging
+            print(f"Generating music with parameters: {params}")
+            
+            # Ensure instruments is a list
+            if 'instruments' in params and not isinstance(params['instruments'], list):
+                params['instruments'] = [params['instruments']]
+            
             # Generate music
             mp3_path = music_generator.generate_music(params)
             
@@ -45,6 +52,8 @@ def start_web_server(port=12000):
                 'mp3_path': os.path.basename(mp3_path)
             })
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return jsonify({
                 'success': False,
                 'error': str(e)

@@ -65,7 +65,8 @@ class MusicGenerator:
                 scale_notes=scale_notes,
                 num_bars=num_bars,
                 complexity=complexity,
-                mood=mood
+                mood=mood,
+                tempo=tempo
             )
             harmony = chord_progression * (num_bars // len(chord_progression) + 1)
             harmony = harmony[:num_bars]
@@ -76,7 +77,8 @@ class MusicGenerator:
                 chord_progression=chord_progression,
                 num_bars=num_bars,
                 complexity=complexity,
-                mood=mood
+                mood=mood,
+                tempo=tempo
             )
             
         else:  # hybrid mode
@@ -86,7 +88,8 @@ class MusicGenerator:
                 chord_progression=chord_progression,
                 num_bars=num_bars,
                 complexity=complexity,
-                mood=mood
+                mood=mood,
+                tempo=tempo
             )
             
             # Use Markov for melody
@@ -95,7 +98,8 @@ class MusicGenerator:
                 num_bars=num_bars,
                 complexity=complexity,
                 mood=mood,
-                chord_progression=harmony  # Pass harmony to influence melody
+                chord_progression=harmony,  # Pass harmony to influence melody
+                tempo=tempo  # Pass tempo to influence melody generation
             )
         
         # Create MIDI file

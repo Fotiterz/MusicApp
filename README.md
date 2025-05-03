@@ -35,35 +35,128 @@ The application consists of the following components:
 1. Clone the repository:
    ```
    git clone <repository-url>
-   cd ai_music_generator
+   cd MusicApp
    ```
 
-2. Install the required dependencies:
+2. Install the required Python dependencies:
    ```
-   pip install -r requirements.txt
+   pip install -r ai_music_generator/requirements.txt
    ```
 
 3. Install additional system dependencies:
+
+   ### Linux (Debian/Ubuntu)
    ```
-   apt-get update
-   apt-get install -y fluidsynth fluid-soundfont-gm ffmpeg
+   sudo apt-get update
+   sudo apt-get install -y fluidsynth fluid-soundfont-gm ffmpeg
    ```
+
+   ### macOS
+   ```
+   brew install fluid-synth ffmpeg
+   ```
+
+   ### Windows
+   
+   #### Automatic Installation (Recommended)
+   
+   When you first run the application, if FluidSynth is not found, two helper batch files 
+   will be created in the current directory:
+   
+   1. `install_fluidsynth.bat` - Run as administrator to:
+      - Download FluidSynth
+      - Install it to `C:\Program Files\FluidSynth`
+      - Add it to your system PATH environment variable
+   
+   2. `install_fluidsynth_local.bat` - For users without administrator privileges:
+      - Download FluidSynth
+      - Install it to your user directory (`%USERPROFILE%\FluidSynth`)
+      - Add it to your user PATH environment variable
+      - Create a configuration file for the application to find FluidSynth
+   
+   #### Manual Installation
+   
+   If the automatic installation doesn't work, follow these steps:
+   
+   ##### FluidSynth
+   1. Download FluidSynth from: https://github.com/FluidSynth/fluidsynth/releases
+   2. Extract the ZIP file to `C:\Program Files\FluidSynth`
+   3. Add the bin directory to your PATH environment variable:
+      - Right-click on "This PC" or "My Computer" and select "Properties"
+      - Click on "Advanced system settings"
+      - Click on "Environment Variables"
+      - Under "System variables", find and select "Path", then click "Edit"
+      - Click "New" and add `C:\Program Files\FluidSynth\bin`
+      - Click "OK" on all dialogs
+   
+   ##### FFmpeg
+   1. Download FFmpeg from: https://ffmpeg.org/download.html
+   2. Extract the ZIP file to a location on your computer (e.g., `C:\Program Files\ffmpeg`)
+   3. Add the bin directory to your PATH environment variable (as described above)
+   
+   #### SoundFont
+   The application will automatically download the required SoundFont file on first run.
+   If the download fails, you can manually download it from:
+   https://archive.org/download/fluidr3-gm-gs/FluidR3_GM.sf2
+   
+   Place the downloaded file in the `ai_music_generator/data` directory.
 
 ## Usage
 
-1. Start the web interface:
+1. Navigate to the project directory:
    ```
-   python main.py --web --port 12000
+   cd MusicApp
    ```
 
-2. Open a web browser and navigate to:
+2. Start the web interface:
+   ```
+   python ai_music_generator/main.py --web --port 12000
+   ```
+
+3. Open a web browser and navigate to:
    ```
    http://localhost:12000
    ```
 
-3. Set your desired parameters and click "Generate Music".
+4. Set your desired parameters and click "Generate Music".
 
-4. Listen to the generated music and download it as an MP3 file if desired.
+5. Listen to the generated music and download it as an MP3 file if desired.
+
+### Troubleshooting
+
+#### Windows-specific issues:
+
+- If you see "FluidSynth not found" or "The system cannot find the path specified: 'C:\tools\fluidsynth\bin'" errors:
+  1. Run the `install_fluidsynth.bat` file that was created in your current directory (run as administrator)
+     - If you don't have administrator privileges, use `install_fluidsynth_local.bat` instead
+  2. After installation, restart your command prompt or terminal
+  3. If you still have issues, manually install FluidSynth to `C:\Program Files\FluidSynth` as described in the installation section
+  4. Verify that FluidSynth is in your PATH by running `fluidsynth --version` in a command prompt
+  5. If you've installed FluidSynth but it's still not found, restart your computer
+
+- If you encounter issues with the SoundFont file:
+  1. Download it manually from the link provided in the installation section
+  2. Create a folder named `data` in the `ai_music_generator` directory
+  3. Place the downloaded SoundFont file in this folder
+  4. The file should be at: `ai_music_generator/data/FluidR3_GM.sf2`
+
+- If you see "fluid_is_soundfont(): fopen() failed: 'File does not exist'" errors:
+  1. This means FluidSynth is installed but can't find the SoundFont file
+  2. Make sure the SoundFont file exists at `ai_music_generator/data/FluidR3_GM.sf2`
+  3. If you've placed the file there and still get the error, try using an absolute path:
+     - Create a file named `fluidsynth_path.txt` in the project root directory
+     - Add the full path to your SoundFont file, e.g., `C:\Users\username\MusicApp\ai_music_generator\data\FluidR3_GM.sf2`
+  4. Restart the application
+
+- If you get permission errors when installing FluidSynth:
+  1. Make sure you're running the batch file or commands as administrator
+  2. Right-click on Command Prompt or PowerShell and select "Run as administrator"
+
+#### Linux/macOS-specific issues:
+
+- If you encounter permission issues when installing system dependencies:
+  1. Make sure you're using `sudo` with the installation commands
+  2. If you don't have sudo access, consider using a virtual environment or container
 
 ## Technical Details
 
