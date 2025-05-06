@@ -61,7 +61,6 @@ INSTRUMENT_MAP = {
     'Pizzicato Strings': 45,
     'Orchestral Harp': 46,
     'Timpani': 47,
-    'String Ensemble': 48,
     'String Ensemble 1': 48,
     'String Ensemble 2': 49,
     'Synth Strings 1': 50,
@@ -142,179 +141,118 @@ INSTRUMENT_MAP = {
     'Helicopter': 125,
     'Applause': 126,
     'Gunshot': 127,
-    'Drums': 0,  # Special case, will be handled separately
-    'Synth': 80,  # Default to Lead 1 (square)
-    'Guitar': 24,  # Default to Acoustic Guitar (nylon)
-    'Bass': 33,  # Default to Electric Bass (finger)
-    'Strings': 48,  # Default to String Ensemble 1
+    'Drums': 0,  # special-case for percussion channel override
+    'Synth': 80,
+    'Guitar': 24,
+    'Bass': 33,
+    'Strings': 48,
 }
+
 
 def parse_note(note_str):
     """
     Parse a note string into note name and octave.
-    
-    Args:
-        note_str (str): Note string (e.g., 'C4', 'D#5')
-        
-    Returns:
-        tuple: (note_name, octave)
     """
-    # Check if the note string ends with a digit (octave)
     if note_str[-1].isdigit():
         octave = int(note_str[-1])
         note_name = note_str[:-1]
     else:
-        # Default to octave 4 if not specified
         octave = 4
         note_name = note_str
-    
     return note_name, octave
+
 
 def create_midi_file(melody, harmony, instruments=['Piano'], bpm=100, vocals=None):
     """
     Create a MIDI file from melody and harmony.
-    
+
     Args:
         melody (list): List of (note, duration) tuples
         harmony (list): List of chord names
         instruments (list): List of instrument names
         bpm (int): Tempo in beats per minute
         vocals (dict, optional): Vocals parameters
-        
+
     Returns:
         str: Path to the created MIDI file
     """
-    # Create a MIDI file with multiple tracks (one for each instrument's melody and harmony)
-    midi = MIDIFile(len(instruments) * 2)  # One track for each instrument's melody and harmony
-    
-    # Set tempo
+    # Total tracks = melody + harmony for each instrument
+    num_tracks = len(instruments) * 2
+    midi = MIDIFile(num_tracks)
     midi.addTempo(0, 0, bpm)
-    
-    # Add melody track(s)
+
+    # --- Melody Tracks ---
     for i, instrument in enumerate(instruments):
         track = i
-        
-        # Get the MIDI program number for the instrument
-        if instrument in INSTRUMENT_MAP:
-            program = INSTRUMENT_MAP[instrument]
-        else:
-            # Default to piano if instrument not found
-            program = 0
-        
-        # Set instrument
-        midi.addProgramChange(track, 0, 0, program)
-        
-        # Add melody notes with variations for each instrument
+        # assign percussion to channel 9, others to unique channels
+        channel = 9 if instrument == 'Drums' else i
+        program = INSTRUMENT_MAP.get(instrument, 0)
+        midi.addProgramChange(track, channel, 0, program)
+
         time = 0
         for idx, (note_str, duration) in enumerate(melody):
             note_name, octave = parse_note(note_str)
-            
             try:
                 midi_note = note_to_midi(note_name, octave)
-                
-                # Add variations based on instrument
-                # Some instruments play all notes, others play every other note
-                # This creates a more interesting ensemble effect
+                # instrument-specific patterns
                 if instrument == 'Piano':
-                    # Piano plays all notes
-                    midi.addNote(track, 0, midi_note, time, duration * 4, 100)
+                    midi.addNote(track, channel, midi_note, time, duration*4, 100)
                 elif instrument == 'Guitar' and idx % 3 == 0:
-                    # Guitar plays every third note with slight octave variation
-                    midi.addNote(track, 0, midi_note + 12, time, duration * 4, 90)
+                    midi.addNote(track, channel, midi_note+12, time, duration*4, 90)
                 elif instrument == 'Bass' and idx % 4 == 0:
-                    # Bass plays every fourth note, one octave lower
-                    midi.addNote(track, 0, midi_note - 12, time, duration * 4, 95)
+                    midi.addNote(track, channel, midi_note-12, time, duration*4, 95)
                 elif instrument == 'Drums' and idx % 2 == 0:
-                    # Drums play every other note (simplified rhythm)
-                    # Use a fixed note for drums (MIDI note 38 = acoustic snare)
-                    midi.addNote(track, 0, 38, time, duration * 4, 100)
-                    # Add kick drum on strong beats
+                    midi.addNote(track, channel, 38, time, duration*4, 100)
                     if idx % 4 == 0:
-                        midi.addNote(track, 0, 36, time, duration * 4, 110)  # 36 = bass drum
+                        midi.addNote(track, channel, 36, time, duration*4, 110)
                 elif instrument == 'Violin' and idx % 2 == 1:
-                    # Violin plays opposite notes from drums
-                    midi.addNote(track, 0, midi_note + 12, time, duration * 4, 85)
+                    midi.addNote(track, channel, midi_note+12, time, duration*4, 85)
                 elif instrument == 'Synth' and idx % 3 == 1:
-                    # Synth plays different notes than Guitar
-                    midi.addNote(track, 0, midi_note + 7, time, duration * 4, 80)  # Add a fifth
+                    midi.addNote(track, channel, midi_note+7, time, duration*4, 80)
                 elif instrument == 'Flute' and idx % 3 == 2:
-                    # Flute plays different notes than Guitar and Synth
-                    midi.addNote(track, 0, midi_note + 24, time, duration * 4, 75)  # Two octaves up
+                    midi.addNote(track, channel, midi_note+24, time, duration*4, 75)
                 elif instrument == 'Trumpet' and idx % 4 == 2:
-                    # Trumpet plays different notes than Bass
-                    midi.addNote(track, 0, midi_note + 12, time, duration * 4, 90)  # One octave up
+                    midi.addNote(track, channel, midi_note+12, time, duration*4, 90)
                 else:
-                    # Other instruments play all notes
-                    midi.addNote(track, 0, midi_note, time, duration * 4, 90)
+                    midi.addNote(track, channel, midi_note, time, duration*4, 90)
             except ValueError:
-                # Skip invalid notes
                 pass
-            
-            time += duration * 4
-    
-    # Add harmony tracks - one for each instrument
-    harmony_tracks = []
-    
-    # Create a harmony track for each instrument
+            time += duration*4
+
+    # --- Harmony Tracks ---
     for i, instrument in enumerate(instruments):
         harmony_track = len(instruments) + i
-        harmony_tracks.append(harmony_track)
-        
-        # Get the MIDI program number for the instrument
-        if instrument in INSTRUMENT_MAP:
-            program = INSTRUMENT_MAP[instrument]
-        else:
-            # Default to piano if instrument not found
-            program = 0
-        
-        # Set instrument for harmony
-        midi.addProgramChange(harmony_track, 0, 0, program)
-    
-    # Add harmony chords
-    time = 0
-    for chord_name in harmony:
-        # Get chord notes
-        try:
-            chord_notes = get_chord_notes(chord_name)
-            
-            # Distribute chord notes among instruments
-            for track_idx, harmony_track in enumerate(harmony_tracks):
-                # Each instrument plays a subset of the chord notes
-                # This creates a more interesting harmony
+        channel = 9 if instrument == 'Drums' else i
+        program = INSTRUMENT_MAP.get(instrument, 0)
+        midi.addProgramChange(harmony_track, channel, 0, program)
+
+        time = 0
+        for chord_name in harmony:
+            try:
+                chord_notes = get_chord_notes(chord_name)
+                # distribute chord notes per instrument
                 for note_idx, note_str in enumerate(chord_notes):
-                    # Distribute notes among instruments
-                    if note_idx % len(harmony_tracks) == track_idx:
+                    # each instrument plays its slice
+                    if note_idx % len(instruments) == i:
                         note_name, octave = parse_note(note_str)
-                        
                         try:
                             midi_note = note_to_midi(note_name, octave)
-                            
-                            # Add note with velocity 80 (softer than melody)
-                            midi.addNote(harmony_track, 0, midi_note, time, 4, 80)
+                            midi.addNote(harmony_track, channel, midi_note, time, 4, 80)
                         except ValueError:
-                            # Skip invalid notes
                             pass
-        except ValueError:
-            # Skip invalid chords
-            pass
-        
-        # Move to next bar
-        time += 4
-    
-    # Add vocals if specified
+            except ValueError:
+                pass
+            time += 4
+
+    # Vocals (placeholder)
     if vocals and vocals.get('enabled', False):
-        # This is a placeholder for vocal synthesis
-        # In a real implementation, this would integrate with a vocal synthesis library
         pass
-    
-    # Create output directory if it doesn't exist
+
+    # Write out
     os.makedirs('output', exist_ok=True)
-    
-    # Write the MIDI file
     midi_path = os.path.join('output', 'generated_music.mid')
     with open(midi_path, 'wb') as f:
         midi.writeFile(f)
-    
     return midi_path
 
 def midi_to_mp3(midi_path):
