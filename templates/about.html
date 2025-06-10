@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>About - AI in the Music Industry</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>About This Project</h1>
+    <p>
+        This project is part of a thesis exploring the application of <strong>Artificial Intelligence (AI)</strong> in the music industry,
+        focusing on the generation of music that blends traditional Greek folk elements with classical techniques.
+    </p>
+    <h2>Project Overview</h2>
+    <p>
+        The app provides two distinct music generation modes:
+    </p>
+    <ul>
+        <li><strong>Rule-Based Generation:</strong> Utilizes handcrafted musical rules and patterns inspired by Greek folk music and the style of Manos Hatzidakis to create compositions.</li>
+        <li><strong>LSTM Neural Network Generation:</strong> Employs a trained Long Short-Term Memory (LSTM) model enhanced with musical rules to generate music sequences that reflect the unique characteristics of Greek music.</li>
+    </ul>
+    <h2>Key Features</h2>
+    <ul>
+        <li>Integration of traditional Greek musical motifs, harmonic progressions, rhythmic structures, and modal scales into AI-generated music.</li>
+        <li>Hybrid approach combining deep learning with rule-based constraints to guide music generation.</li>
+        <li>User-friendly web interface for selecting generation mode, tempo, key, length, and instruments.</li>
+        <li>Real-time audio playback and download options for generated music in MP3 and MIDI formats.</li>
+    </ul>
+    <h2>Usage Notes</h2>
+    <p>
+        <strong>Important:</strong> In the LSTM model mode, only one instrument can be selected due to model limitations.
+    </p>
+    <h2>About the Thesis</h2>
+    <p>
+        This work is part of a master's thesis investigating the role of AI in transforming music creation and production.
+        It aims to demonstrate how AI can be used to preserve and innovate within traditional music styles, specifically Greek folk music.
+    </p>
+
+    <p>
+        <a href="{{ url_for('index') }}">Back to Music Generator</a>
+    </p>
+</body>
+</html>

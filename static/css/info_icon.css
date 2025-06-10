@@ -1,0 +1,32 @@
+.info-icon {
+    display: inline-block;
+    background-color: #2980b9;
+    color: white;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    font-size: 14px;
+    cursor: default;
+    margin-left: 6px;
+    position: relative;
+}
+
+.info-icon:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #34495e;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 12px;
+    z-index: 1000;
+    opacity: 0.9;
+    pointer-events: none;
+}
