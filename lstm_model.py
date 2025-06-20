@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import Input, LSTM, Dense, Dropout, Concatenate
 from tensorflow.keras.utils import to_categorical
 
@@ -21,12 +21,6 @@ def build_lstm_model_with_duration(input_shape, pitch_output_dim, duration_outpu
     model = Model(inputs=inputs, outputs=[pitch_output, duration_output])
     model.compile(loss='categorical_crossentropy', optimizer='adam', loss_weights=[1.0, 1.0])
     return model
-
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
-from tensorflow.keras.utils import to_categorical
 
 def build_lstm_model(input_shape, output_dim):
     """
