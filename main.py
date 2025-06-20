@@ -3,13 +3,14 @@ import os
 import uuid
 import atexit
 import numpy as np
+import pickle
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module='tensorflow')
 import tensorflow as tf
 from rule_based import generate_rule_based_music
 from utils import save_stream_to_midi, convert_midi_to_mp3
 from lstm_model import build_lstm_model_with_duration, generate_hybrid_music
-from music21 import stream, note, chord
+from music21 import stream, note, chord, key as m21key, pitch as m21pitch
 
 app = Flask(__name__)
 OUTPUT_DIR = "output"
@@ -116,9 +117,6 @@ def generate():
         music_stream = generate_rule_based_music(tempo, key_sig, length, instruments)
     elif mode == 'lstm':
         # Load trained LSTM model if available, else build new
-        import tensorflow as tf
-        import pickle
-        from music21 import key as m21key, pitch as m21pitch
         model_path = 'lstm_trained_model.h5'
         vocab_path = 'pitchnames.pkl'
         duration_vocab_path = 'durationnames.pkl'
